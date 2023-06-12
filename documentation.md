@@ -144,7 +144,7 @@ ansible-eks-project/
 
 <br>
 
-<img width="1058" alt="project_structure" src="https://github.com/earchibong/eks-ansible/assets/92983658/d6079815-ef7f-407c-b208-4e039ab28828">
+image 
 
 <br>
 
@@ -156,9 +156,17 @@ ansible-eks-project/
 
 ```
 
-[eks_nodes]
-node1 ansible_host=<public_node1_private_ip> ansible_user='ec2-user'
-node2 ansible_host=<public_node2_private_ip> ansible_user='ec2-user'
+eks_nodes:
+  hosts:
+    node1:
+      ansible_host: <private-ip of node 1>
+      ansible_user: ec2-user
+      
+    node2:
+      ansible_host: <private ip of node 2>
+      ansible_user: ec2-user
+  
+  
 
 
 ```
@@ -167,7 +175,7 @@ node2 ansible_host=<public_node2_private_ip> ansible_user='ec2-user'
 
 <br>
 
-<img width="805" alt="inventorys" src="https://github.com/earchibong/eks-ansible/assets/92983658/a35487f3-8cb6-476a-bfb8-2e3321c1a90f">
+image
 
 <br>
 
