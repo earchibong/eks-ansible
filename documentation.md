@@ -12,7 +12,7 @@ As per the project request below...
 
 <br>
 
-Why would we want to create these resources?
+### Why would we want to create these resources?
 
 Let’s consider the following scenario
 
@@ -104,7 +104,7 @@ sudo pip install boto3 botocore
 <br>
 
 
-### set Up Project Structure
+### Set Up Project Structure
 
 - Create a directory structure for  Ansible project.
 
