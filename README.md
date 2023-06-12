@@ -1,4 +1,4 @@
-# Automation of EKS Resource Creation with Ansible
+# Create Kubernetes Role for Service Account with Ansible
 
 I got the idea of this side project from upwork. The following job was posted and I wanted to try it out...
 
