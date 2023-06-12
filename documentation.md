@@ -254,6 +254,22 @@ service_accounts:
 
 ## Create A Playbook
 
+In the playbook, the `yamllint` module is used to validate the YAML file before creating the resources. The `file_path` parameter specifies the path to the YAML file (files/eks_data.yaml in this example). If the YAML file is invalid, the playbook execution will fail.
+
+In Ansible, YAML syntax validation is performed automatically when executing the playbook. If the YAML file is invalid, the playbook execution will fail with a descriptive error message pointing to the syntax issue in the YAML file...so in this sense, `yamllint` may not really be necessary.
+
+However, the purpose of using `yamllint` or any external YAML linter is to catch potential issues or best practices beyond basic syntax errors. It can help identify stylistic or formatting problems in the YAML file that may not necessarily cause playbook execution failures but can lead to unexpected behavior or make the code harder to read and maintain.
+
+Using a YAML linter like `yamllint` allows you to enforce consistency, readability, and adherence to YAML best practices across your YAML files. It can catch issues such as incorrect indentation, inconsistent spacing, unused variables, and more.
+
+While yamllint is not mandatory for playbook execution, it can be a useful tool in your development workflow to ensure clean and well-formed YAML files. However, if you are confident in the validity and quality of your YAML files, you can choose to skip the `yamllint` step in your playbook.
+
+but in this case, as validation of yaml was required before creating resources, we will use `yamllint`
+
+<br>
+
+<br>
+
 - update `playbooks/eks_setup.yml`
 
 <br>
