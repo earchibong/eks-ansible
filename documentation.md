@@ -54,7 +54,7 @@ Before you begin, make sure you have the following prerequisites in place:
 
 - An EKS cluster set up and configured.
 
-You can find out how to do this with `terraform` from <a href="https://github.com/earchibong/terraform-eks">this tutorial</a> or with `eksctl` with <a href="https://github.com/earchibong/devops_projects/blob/main/kubenetes_05.md">this tutorial.</a>
+You can find out how to do this with `terraform` from <a href="https://github.com/earchibong/terraform-eks">this tutorial</a> or with `eksctl` from <a href="https://github.com/earchibong/devops_projects/blob/main/kubenetes_05.md">this tutorial.</a>
 
 <br>
 
