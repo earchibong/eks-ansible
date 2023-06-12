@@ -19,3 +19,14 @@ Here's what the tutorial will cover:
 - Set up the project structure
 - Write the playbook
 - Run the playbook
+
+<br>
+
+<br>
+
+Get the <a href="https://github.com/earchibong/eks-ansible/blob/main/documentation.md">FULL PROJECT DOCUMENTATION HERE</>
+  
+<br>
+
+<br>
+  
