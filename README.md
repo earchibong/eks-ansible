@@ -24,7 +24,8 @@ Here's what the tutorial will cover:
 
 <br>
 
-  
+Get the <a href="https://github.com/earchibong/eks-ansible/blob/main/documentation.md">full project documentation here</a>
+
 <br>
 
 <br>
