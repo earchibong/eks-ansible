@@ -43,7 +43,8 @@ Lets implement it with ansible.
 
 ## Project Steps:
 - <a href=" ">Pre-requisites</a>
-- <a href=" "> Install ansible & dependencies</a>
+- <a href="https://github.com/earchibong/eks-ansible/blob/main/documentation.md#install-and-configure-ansible-in-host-server "> Install & Configure Ansible Host Server</a>
+- <a href=" ">Set Up Project Structure</a>
 
 <br>
 
@@ -85,6 +86,12 @@ ssh -A -i "private ec2 key" ec2-user@public_ip
 
 <br>
 
+<img width="797" alt="ssh-agent" src="https://github.com/earchibong/eks-ansible/assets/92983658/e3853666-380c-4863-a626-4c14b118967e">
+
+<br>
+
+<br>
+
 - install ansible
 
 *you can use the <a href="https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html">offical ansible documentation</a>*
@@ -94,8 +101,20 @@ ssh -A -i "private ec2 key" ec2-user@public_ip
 sudo yum update
 sudo amazon-linux-extras install ansible2
 
+# install pip
+curl -O https://bootstrap.pypa.io/get-pip.py
+python3 get-pip.py --user
+
+ls -a ~
+export PATH=.bash_profile:$PATH
+
 # Install the required dependencies for working with EKS
-sudo pip install boto3 botocore
+pip install boto3 botocore
+
+# install yamllint
+sudo yum install python3-pip
+pip3 install yamllint
+
 
 ```
 
@@ -112,11 +131,11 @@ sudo pip install boto3 botocore
 
 ansible-eks-project/
 ├── inventories/
-│   └── eks_cluster/
+│   └── eks_cluster.yml
 └── playbooks/
     ├── eks_setup.yml
     └── files/
-        └── eks_data.yaml
+        └── eks_data.yml
 
 
 ```
@@ -125,4 +144,192 @@ ansible-eks-project/
 
 <br>
 
+<img width="1058" alt="project_structure" src="https://github.com/earchibong/eks-ansible/assets/92983658/d6079815-ef7f-407c-b208-4e039ab28828">
 
+<br>
+
+<br>
+
+### Set Up Ansible Inventory
+
+- Update `inventories/eks_cluster.yml` file with this snippet of code: ...*notice that the user in this case is `ec2-user` for an `ubuntu` server it would be `ubuntu`*
+
+```
+
+[eks_nodes]
+node1 ansible_host=<public_node1_private_ip> ansible_user='ec2-user'
+node2 ansible_host=<public_node2_private_ip> ansible_user='ec2-user'
+
+
+```
+
+<br>
+
+<br>
+
+<img width="805" alt="inventorys" src="https://github.com/earchibong/eks-ansible/assets/92983658/a35487f3-8cb6-476a-bfb8-2e3321c1a90f">
+
+<br>
+
+<br>
+
+### Set Up Data File
+
+The data file does the following:
+- it defines two namespaces `webapps` and `webapps2`
+- it defines two service accounts named `app-service-account`  and `app-service-account2` that will be bound to the namespaces
+- it defines two roles named `app-role`  and `app-role2` specific to the namespaces.
+- defines role-bindings to attach the roles to the service accounts.
+
+<br>
+
+<br>
+
+- update `playbooks/files/eks_data.yml`
+
+```
+
+---
+namespaces:
+  - webapps
+  - webapps2
+
+roles:
+  - name: app-role
+    namespace: webapps
+    rules:
+      - apiGroups: [""]
+        resources: ["pods", "services"]
+        verbs: ["get", "list", "create"]
+  - name: app-role2
+    namespace: webapps2
+    rules:
+      - apiGroups: ["apps"]
+        resources: ["deployments"]
+        verbs: ["get", "list", "create"]
+
+role_bindings:
+  - name: app-rolebinding
+    namespace: webapps
+    role: app-role
+    subjects:
+      - kind: ServiceAccount
+        name: app-service-account 
+        namespace: webapps
+  - name: my-role-binding2
+    namespace: my-namespace2
+    role: app-rolebinding2
+    subjects:
+      - kind: ServiceAccount
+        name: app-service-account2
+        namespace: webapps2
+
+service_accounts:
+  - name: app-service-account
+    namespace: webapps
+  - name: app-service-account2
+    namespace: webapps2
+
+
+```
+
+<br>
+
+<br>
+
+<img width="1100" alt="data" src="https://github.com/earchibong/eks-ansible/assets/92983658/196dc196-0d7e-4dec-9c4b-e8414afd9d49">
+
+
+<br>
+
+<br>
+
+## Create A Playbook
+
+- update `playbooks/eks_setup.yml`
+
+<br>
+
+```
+
+---
+- name: Setup EKS
+  hosts: eks_nodes
+  remote_user: ec2-user
+  become: yes
+  become_method: sudo
+  gather_facts: false
+
+  vars_files:
+    - files/eks_data.yaml
+
+  tasks:
+    - name: Validate YAML file
+      yamllint:
+        file_path: files/eks_data.yaml
+    
+    - name: Create namespaces
+      k8s:
+        api_version: v1
+        kind: Namespace
+        name: "{{ item }}"
+        state: present
+      loop: "{{ namespaces }}"
+    
+    - name: Create roles
+      k8s:
+        api_version: rbac.authorization.k8s.io/v1
+        kind: Role
+        name: "{{ item.name }}"
+        namespace: "{{ item.namespace }}"
+        rules: "{{ item.rules }}"
+        state: present
+      loop: "{{ roles }}"
+    
+    - name: Create role bindings
+      k8s:
+        api_version: rbac.authorization.k8s.io/v1
+        kind: RoleBinding
+        name: "{{ item.name }}"
+        namespace: "{{ item.namespace }}"
+        role_ref:
+          api_group: rbac.authorization.k8s.io
+          kind: Role
+          name: "{{ item.role }}"
+        subjects: "{{ item.subjects }}"
+        state: present
+      loop: "{{ role_bindings }}"
+    
+    - name: Create service accounts
+      k8s:
+        api_version: v1
+        kind: ServiceAccount
+        name: "{{ item.name }}"
+        namespace: "{{ item.namespace }}"
+        state: present
+      loop: "{{ service_accounts }}"
+
+
+
+```
+
+<br>
+
+<br>
+
+<img width="1112" alt="playbook" src="https://github.com/earchibong/eks-ansible/assets/92983658/0cf2d958-0c9a-4770-abae-42cbb3a43adf">
+
+<br>
+
+<br>
+
+## Run Playbook
+```
+
+ ansible-playbook playbooks/eks_setup.yml -i inventories/eks_cluster.yml
+
+```
+
+<br>
+
+<br>
