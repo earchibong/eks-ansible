@@ -179,7 +179,7 @@ node2 ansible_host=<public_node2_public_ip> ansible_user=<node_username>
 
 <br>
 
-image
+<img width="804" alt="inventories" src="https://github.com/earchibong/eks-ansible/assets/92983658/bc15fb10-4924-4a32-bb4b-911a62870edf">
 
 <br>
 
