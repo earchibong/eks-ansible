@@ -113,7 +113,7 @@ pip install boto3 botocore
 
 # install yamllint
 sudo yum install python3-pip
-pip3 install yamllint
+pip3 install ansible-lint
 
 
 ```
