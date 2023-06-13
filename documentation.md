@@ -165,8 +165,12 @@ eks_nodes:
     node2:
       ansible_host: <private ip of node 2>
       ansible_user: ec2-user
-  
-  
+
+# Alternative syntax:
+[eks_nodes]
+node1 ansible_host=<public_node1_public_ip> ansible_user=<node_username>
+node2 ansible_host=<public_node2_public_ip> ansible_user=<node_username>
+
 
 
 ```
@@ -254,17 +258,15 @@ service_accounts:
 
 ## Create A Playbook
 
-In the playbook, the `yamllint` module is used to validate the YAML file before creating the resources. The `file_path` parameter specifies the path to the YAML file (files/eks_data.yaml in this example). If the YAML file is invalid, the playbook execution will fail.
+In the playbook, `ansible-lint` is used to validate the YAML file before creating the resources. The `command` module is used to execute the `ansible-lint` command. The `--force-color` option is used to enable colorized output, and `--parseable-severity` option is used to output results in a parseable format.
 
-In Ansible, YAML syntax validation is performed automatically when executing the playbook. If the YAML file is invalid, the playbook execution will fail with a descriptive error message pointing to the syntax issue in the YAML file...so in this sense, `yamllint` may not really be necessary.
+The `--exclude` option can be used to exclude specific lint rules or directories if needed. Below, the `skip_ansible_lint` rule is excluded. Adjust the `--exclude` option as per your requirements.
 
-However, the purpose of using `yamllint` or any external YAML linter is to catch potential issues or best practices beyond basic syntax errors. It can help identify stylistic or formatting problems in the YAML file that may not necessarily cause playbook execution failures but can lead to unexpected behavior or make the code harder to read and maintain.
+The `chdir` parameter specifies the directory where the playbook is located. The register parameter captures the result of the linting command. The `failed_when` parameter ensures the task fails if the linting command returns a non-zero exit code.
 
-Using a YAML linter like `yamllint` allows you to enforce consistency, readability, and adherence to YAML best practices across your YAML files. It can catch issues such as incorrect indentation, inconsistent spacing, unused variables, and more.
+In Ansible, YAML syntax validation is performed automatically when executing the playbook. If the YAML file is invalid, the playbook execution will fail with a descriptive error message pointing to the syntax issue in the YAML file.
 
-While yamllint is not mandatory for playbook execution, it can be a useful tool in your development workflow to ensure clean and well-formed YAML files. However, if you are confident in the validity and quality of your YAML files, you can choose to skip the `yamllint` step in your playbook.
-
-but in this case, as validation of yaml was required before creating resources, we will use `yamllint`
+However, the purpose of using `ansible-lint` or any external YAML linter is to catch potential issues or best practices beyond basic syntax errors. you can perform more comprehensive linting checks specific to Ansible playbooks and roles such as unused variables, missing handlers, incorrect module usage, task ordering as well as YAML syntax validation. This allows you to catch potential issues beyond basic syntax errors and enforce best practices specific to Ansible.
 
 <br>
 
@@ -289,8 +291,16 @@ but in this case, as validation of yaml was required before creating resources, 
 
   tasks:
     - name: Validate YAML file
-      yamllint:
-        file_path: files/eks_data.yaml
+    command: ansible-lint --force-color --parseable-severity --exclude=\
+    skip_ansible_lint tests/
+    args:
+      chdir: "{{ playbook_dir }}"
+    changed_when: false
+    register: lint_result
+    failed_when: lint_result.rc > 0
+    ignore_errors: true
+    tags:
+      - validation
     
     - name: Create namespaces
       k8s:
