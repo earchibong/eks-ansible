@@ -62,6 +62,20 @@ You can find out how to do this with `terraform` from <a href="https://github.co
 <br>
 
 ## Install And Configure Ansible in Host server
+
+- copy keypair to `ansible-host` server
+
+```
+# run the following on local terminal to copy keypair to /tmp folder
+
+scp -i "identity_file.pem" -r <path-to-keypair> ec2-user@<ansible-host-public-ip>:/tmp
+
+
+```
+
+<br>
+
+
 - Set up an SSH agent and connect to `ansible-host` server:
 
 ```
@@ -123,6 +137,7 @@ pip3 install ansible-lint
 <br>
 
 
+
 ### Set Up Project Structure
 
 - Create a directory structure for  Ansible project.
@@ -156,21 +171,17 @@ ansible-eks-project/
 
 ```
 
-eks_nodes:
-  hosts:
-    node1:
-      ansible_host: <private-ip of node 1>
-      ansible_user: ec2-user
-      
-    node2:
-      ansible_host: <private ip of node 2>
-      ansible_user: ec2-user
+[eks_cluster]
+localhost ansible_connection=local
+#bastion ansible_host=<bastion_host_public_ip> ansible_user=<bastion_username>
 
-# Alternative syntax:
 [eks_nodes]
 node1 ansible_host=<public_node1_public_ip> ansible_user=<node_username>
 node2 ansible_host=<public_node2_public_ip> ansible_user=<node_username>
 
+[eks_cluster:vars]
+ansible_ssh_common_args='-o ProxyCommand="ssh -W %h:%p -q <bastion_username>@<bastion_host_private_ip>"'
+#ansible_ssh_common_args='-o ProxyCommand="ssh -W %h:%p -q -l <bastion_username> <bastion_host_public_ip>"'
 
 
 ```
@@ -179,9 +190,11 @@ node2 ansible_host=<public_node2_public_ip> ansible_user=<node_username>
 
 <br>
 
-<img width="804" alt="inventories" src="https://github.com/earchibong/eks-ansible/assets/92983658/bc15fb10-4924-4a32-bb4b-911a62870edf">
+<img width="799" alt="inventory" src="https://github.com/earchibong/eks-ansible/assets/92983658/d29e5b3f-861b-425c-b333-fe50ee63a670">
 
 <br>
+
+With this inventory configuration, Ansible will connect to the `bastion host first` and then establish an SSH connection to the public nodes in the EKS cluster. This allows Ansible to execute the playbook on the target nodes through the bastion host.
 
 <br>
 
