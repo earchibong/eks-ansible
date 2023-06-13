@@ -55,26 +55,83 @@ Before you begin, make sure you have the following prerequisites in place:
 
 - An EKS cluster set up and configured.
 
-You can find out how to do this with `terraform` from <a href="https://github.com/earchibong/terraform-eks">this tutorial</a> or with `eksctl` from <a href="https://github.com/earchibong/devops_projects/blob/main/kubenetes_05.md">this tutorial.</a>
+You can find out how to do this with `terraform` from <a href="https://github.com/earchibong/terraform-eks">this tutorial</a> or create using `eksctl` below.
+
+<br>
+
+### Create EKS cluster with eksctl
+
+- create 2 keypairs for bastion host and public nodes
+
+```
+
+aws ec2 create-key-pair \
+    --key-name my-key-pair \
+    --key-type rsa \
+    --key-format pem \
+    --query "KeyMaterial" \
+    --output text > my-key-pair.pem
+    
+chmod 400 my-key-pair.pem
+    
+```
 
 <br>
 
 <br>
+
+<img width="820" alt="eypair" src="https://github.com/earchibong/eks-ansible/assets/92983658/7efb0160-d039-4f6b-9232-0d7ccf78d1c5">
+
+<br>
+
+<br>
+
+- create a config file named `cluster.yaml` and add the following:
+
+```
+
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: my-cluster
+  region: <your-region> # replace with your desired AWS region
+
+nodeGroups:
+  - name: public-ng
+    labels:
+      nodegroup-type: public
+    instanceType: <instance-type> # replace with desired EC2 instance type (e.g., t3.medium)
+    desiredCapacity: 2
+    privateNetworking: false # set to false for public nodes
+    ssh:
+      publicKeyName: <key-pair-name> # replace with your EC2 key pair name
+
+managedNodeGroups:
+  - name: bastion-ng
+    labels:
+      nodegroup-type: bastion
+    instanceType: t2.micro # adjust as needed for your bastion host
+    desiredCapacity: 1
+    privateNetworking: true # set to true for private nodes
+    ssh:
+      publicKeyName: <key-pair-name> # replace with your EC2 key pair name
+
+
+```
+
+<br>
+
+<br>
+
+<img width="1094" alt="cluster" src="https://github.com/earchibong/eks-ansible/assets/92983658/65a19374-7089-402f-832f-c42e89ec4b72">
+
+<br>
+
+<br>
+
 
 ## Install And Configure Ansible in Host server
-
-- copy keypair to `ansible-host` server
-
-```
-# run the following on local terminal to copy keypair to /tmp folder
-
-scp -i "identity_file.pem" -r <path-to-keypair> ec2-user@<ansible-host-public-ip>:/tmp
-
-
-```
-
-<br>
-
 
 - Set up an SSH agent and connect to `ansible-host` server:
 
@@ -105,6 +162,26 @@ ssh -A -i "private ec2 key" ec2-user@public_ip
 <br>
 
 <br>
+
+- copy public-nodes keypair to `ansible-host` server
+
+```
+
+aws ec2 describe-key-pairs --key-names eks-nodes --include-public-key
+
+copy the public key
+open the .ssh/authorized_keys file on ansible-host instance. 
+Paste the public key information from eks-nodes key pair underneath the existing public key information. 
+Save the file.
+
+
+```
+
+<br>
+
+<br>
+
+
 
 - install ansible
 
