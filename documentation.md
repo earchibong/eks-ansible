@@ -144,7 +144,7 @@ ansible-eks-project/
 
 <br>
 
-image 
+<img width="808" alt="file_structure" src="https://github.com/earchibong/eks-ansible/assets/92983658/e2a63c6b-8fac-4a8e-a523-e2a31ecc33b3">
 
 <br>
 
