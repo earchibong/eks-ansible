@@ -98,7 +98,7 @@ metadata:
   region: <your-region> # replace with your desired AWS region
 
 nodeGroups:
-  - name: public-ng
+  - name: public
     labels:
       nodegroup-type: public
     instanceType: <instance-type> # replace with desired EC2 instance type (e.g., t3.medium)
@@ -108,47 +108,20 @@ nodeGroups:
       publicKeyName: <key-pair-name> # replace with your EC2 key pair name
 
 managedNodeGroups:
-  - name: bastion-ng
+  - name: bastion
     labels:
       nodegroup-type: bastion
     instanceType: t2.micro # adjust as needed for your bastion host
     desiredCapacity: 1
-    privateNetworking: true # set to true for private nodes
+    privateNetworking: false # set to true for private nodes
     ssh:
       publicKeyName: <key-pair-name> # replace with your EC2 key pair name
 
 
-```
 
-<br>
+# create cluster command on terminal
+eksctl create cluster -f cluster.yaml
 
-<br>
-
-<img width="1094" alt="cluster" src="https://github.com/earchibong/eks-ansible/assets/92983658/65a19374-7089-402f-832f-c42e89ec4b72">
-
-<br>
-
-<br>
-
-
-## Install And Configure Ansible in Host server
-
-- Set up an SSH agent and connect to `ansible-host` server:
-
-```
-
-
-# on your local machine:
-
-eval `ssh-agent -s`
-ssh-add ./<path-to-private-key>
-
-# Confirm the key has been added:
-ssh-add -l
-
-
-# ssh into Ansible-host server using ssh-agent: 
-ssh -A -i "private ec2 key" ec2-user@public_ip
 
 
 ```
@@ -157,33 +130,16 @@ ssh -A -i "private ec2 key" ec2-user@public_ip
 
 <br>
 
-<img width="797" alt="ssh-agent" src="https://github.com/earchibong/eks-ansible/assets/92983658/e3853666-380c-4863-a626-4c14b118967e">
-
-<br>
-
-<br>
-
-- copy public-nodes keypair to `ansible-host` server
-
-```
-
-aws ec2 describe-key-pairs --key-names eks-nodes --include-public-key
-
-copy the public key
-open the .ssh/authorized_keys file on ansible-host instance. 
-Paste the public key information from eks-nodes key pair underneath the existing public key information. 
-Save the file.
-
-
-```
+<img width="995" alt="cluster" src="https://github.com/earchibong/eks-ansible/assets/92983658/2a2ae323-7ced-4cfd-90c3-96921733522f">
 
 <br>
 
 <br>
 
 
+## Install And Configure Ansible
 
-- install ansible
+- On local machine, install ansible and other dependencies
 
 *you can use the <a href="https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html">offical ansible documentation</a>*
 
@@ -200,11 +156,10 @@ ls -a ~
 export PATH=.bash_profile:$PATH
 
 # Install the required dependencies for working with EKS
-pip install boto3 botocore
+sudo pip3 install botocore
 
 # install yamllint
-sudo yum install python3-pip
-pip3 install ansible-lint
+sudo pip3 install ansible-lint
 
 
 ```
@@ -217,7 +172,8 @@ pip3 install ansible-lint
 
 ### Set Up Project Structure
 
-- Create a directory structure for  Ansible project.
+- create a folder `ansible-eks`
+- Create a directory structure for Ansible project.
 
 ```
 
@@ -236,7 +192,7 @@ ansible-eks-project/
 
 <br>
 
-<img width="808" alt="file_structure" src="https://github.com/earchibong/eks-ansible/assets/92983658/e2a63c6b-8fac-4a8e-a523-e2a31ecc33b3">
+<img width="900" alt="set-up" src="https://github.com/earchibong/eks-ansible/assets/92983658/712088e6-03ef-4eb9-b11f-7a5c419fa0d4">
 
 <br>
 
@@ -248,17 +204,16 @@ ansible-eks-project/
 
 ```
 
-[eks_cluster]
-localhost ansible_connection=local
-#bastion ansible_host=<bastion_host_public_ip> ansible_user=<bastion_username>
+[bastion]
+bastion ansible_host=<bastion_host_public_ip> ansible_user=<bastion_username> ansible_ssh_private_key_file=/path/to/bastion-private-key.pem
 
 [eks_nodes]
-node1 ansible_host=<public_node1_public_ip> ansible_user=<node_username>
-node2 ansible_host=<public_node2_public_ip> ansible_user=<node_username>
+node1 ansible_host=<public_node1_private_ip> ansible_user=<node_username> ansible_ssh_private_key_file=/path/to/public-node-private-key.pem
+node2 ansible_host=<public_node2_private_ip> ansible_user=<node_username> ansible_ssh_private_key_file=/path/to/public-node-private-key.pem
 
-[eks_cluster:vars]
-ansible_ssh_common_args='-o ProxyCommand="ssh -W %h:%p -q <bastion_username>@<bastion_host_private_ip>"'
-#ansible_ssh_common_args='-o ProxyCommand="ssh -W %h:%p -q -l <bastion_username> <bastion_host_public_ip>"'
+[eks_nodes:vars]
+ansible_ssh_common_args='-o ProxyCommand="ssh -W %h:%p -q -l <bastion_username> <bastion_host_public_ip>"'
+
 
 
 ```
@@ -267,7 +222,7 @@ ansible_ssh_common_args='-o ProxyCommand="ssh -W %h:%p -q <bastion_username>@<ba
 
 <br>
 
-<img width="799" alt="inventory" src="https://github.com/earchibong/eks-ansible/assets/92983658/d29e5b3f-861b-425c-b333-fe50ee63a670">
+<img width="1292" alt="eks_cluster" src="https://github.com/earchibong/eks-ansible/assets/92983658/15cbac85-9ab9-4923-b77f-cb901bdc7351">
 
 <br>
 
@@ -339,8 +294,7 @@ service_accounts:
 
 <br>
 
-<img width="1100" alt="data" src="https://github.com/earchibong/eks-ansible/assets/92983658/196dc196-0d7e-4dec-9c4b-e8414afd9d49">
-
+<img width="1203" alt="data" src="https://github.com/earchibong/eks-ansible/assets/92983658/712f0ae2-b0aa-49ae-a933-86bd105d867b">
 
 <br>
 
@@ -381,7 +335,7 @@ However, the purpose of using `ansible-lint` or any external YAML linter is to c
 
   tasks:
     - name: Validate YAML file
-    command: ansible-lint --force-color --parseable-severity --exclude=\
+    command: ansible-lint --force-color --parseable-severity --exclude= playbooks/files/eks_data.yml
     skip_ansible_lint tests/
     args:
       chdir: "{{ playbook_dir }}"
@@ -441,7 +395,7 @@ However, the purpose of using `ansible-lint` or any external YAML linter is to c
 
 <br>
 
-<img width="1112" alt="playbook" src="https://github.com/earchibong/eks-ansible/assets/92983658/0cf2d958-0c9a-4770-abae-42cbb3a43adf">
+<img width="1185" alt="playbook" src="https://github.com/earchibong/eks-ansible/assets/92983658/b698c960-8635-4ea0-8271-75080f8aaa9e">
 
 <br>
 
@@ -451,6 +405,7 @@ However, the purpose of using `ansible-lint` or any external YAML linter is to c
 ```
 
  ansible-playbook playbooks/eks_setup.yml -i inventories/eks_cluster.yml
+
 
 ```
 
