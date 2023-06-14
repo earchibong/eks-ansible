@@ -161,6 +161,9 @@ sudo pip3 install botocore
 # install yamllint
 sudo pip3 install ansible-lint
 
+# install the community.kubernetes collection
+ansible-galaxy collection install community.kubernetes
+
 
 ```
 
@@ -302,15 +305,7 @@ service_accounts:
 
 ## Create A Playbook
 
-In the playbook, `ansible-lint` is used to validate the YAML file before creating the resources. The `command` module is used to execute the `ansible-lint` command. The `--force-color` option is used to enable colorized output, and `--parseable-severity` option is used to output results in a parseable format.
-
-The `--exclude` option can be used to exclude specific lint rules or directories if needed. Below, the `skip_ansible_lint` rule is excluded. Adjust the `--exclude` option as per your requirements.
-
-The `chdir` parameter specifies the directory where the playbook is located. The register parameter captures the result of the linting command. The `failed_when` parameter ensures the task fails if the linting command returns a non-zero exit code.
-
-In Ansible, YAML syntax validation is performed automatically when executing the playbook. If the YAML file is invalid, the playbook execution will fail with a descriptive error message pointing to the syntax issue in the YAML file.
-
-However, the purpose of using `ansible-lint` or any external YAML linter is to catch potential issues or best practices beyond basic syntax errors. you can perform more comprehensive linting checks specific to Ansible playbooks and roles such as unused variables, missing handlers, incorrect module usage, task ordering as well as YAML syntax validation. This allows you to catch potential issues beyond basic syntax errors and enforce best practices specific to Ansible.
+the `include_vars` module is used to include the YAML file as variables. The YAML data will be stored in the `yaml_data` variable. The subsequent task checks if the `yaml_data` variable is defined and fails the playbook if it is not, indicating that the YAML file could not be read or is invalid.
 
 <br>
 
@@ -331,20 +326,18 @@ However, the purpose of using `ansible-lint` or any external YAML linter is to c
   gather_facts: false
 
   vars_files:
-    - files/eks_data.yaml
+    - files/eks_data.yml
 
   tasks:
-    - name: Validate YAML file
-    command: ansible-lint --force-color --parseable-severity --exclude= playbooks/files/eks_data.yml
-    skip_ansible_lint tests/
-    args:
-      chdir: "{{ playbook_dir }}"
-    changed_when: false
-    register: lint_result
-    failed_when: lint_result.rc > 0
-    ignore_errors: true
-    tags:
-      - validation
+    - name: include YAML file
+      include_vars:
+        file: ./files/eks_data.yml
+        name: yaml_data
+
+    - name: check if YAML data is valid
+      fail:
+        msg: "YAML file validation failed."
+      when: yaml_data is not defined
     
     - name: Create namespaces
       k8s:
