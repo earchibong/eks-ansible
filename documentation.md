@@ -276,7 +276,8 @@ bastion ansible_host=3.10.214.70 ansible_user=ec2-user
 
 [eks_nodes]
 node1 ansible_host=18.134.196.23 ansible_user=ec2-user 
-node2 ansible_host=18.133.73.103 ansible_user=ec2-user 
+node2 ansible_host=18.133.73.103 ansible_user=ec2-user
+
 [eks_nodes:vars]
 ansible_ssh_common_args='-o ProxyCommand="ssh -W %h:%p -q -l ec2-user 3.10.214.70"'
 #ansible_ssh_common_args='-o ProxyJump=ec2-user@3.10.226.186'
