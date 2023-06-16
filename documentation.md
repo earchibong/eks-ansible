@@ -134,8 +134,31 @@ eksctl create cluster -f cluster.yaml
 
 <br>
 
+<be>
+
+
+- install `kubectl`
+
+```
+
+# Determine whether you already have kubectl installed on your device.
+kubectl version --short --client
+
+
+# Configure kubeconfig for kubectl
+aws eks --region <region-code> update-kubeconfig --name <cluster_name>
+aws eks --region eu-west-2 update-kubeconfig --name ansible-eks
+
+# List Worker Nodes
+kubectl get nodes
+kubectl get nodes -o wide
+
+
+```
+
 <br>
 
+<br>
 
 ## Install And Configure Ansible
 
