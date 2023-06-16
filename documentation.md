@@ -46,6 +46,7 @@ Lets implement it with ansible.
 - <a href="https://github.com/earchibong/eks-ansible/blob/main/documentation.md#install-and-configure-ansible-in-host-server "> Install & Configure Ansible Host Server</a>
 - <a href="https://github.com/earchibong/eks-ansible/blob/main/documentation.md#set-up-project-structure ">Set Up Project Structure</a>
 - <a href="https://github.com/earchibong/eks-ansible/blob/main/documentation.md#set-up-ansible-inventory">Set Up ansible Inventory</a>
+- <a href="https://github.com/earchibong/eks-ansible/blob/main/documentation.md#set-up-data-file">Set Up Data File</a>
 
 <br>
 
