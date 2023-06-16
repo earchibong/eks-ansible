@@ -44,7 +44,7 @@ Lets implement it with ansible.
 ## Project Steps:
 - <a href=" ">Pre-requisites</a>
 - <a href="https://github.com/earchibong/eks-ansible/blob/main/documentation.md#install-and-configure-ansible-in-host-server "> Install & Configure Ansible Host Server</a>
-- <a href=" ">Set Up Project Structure</a>
+- <a href="https://github.com/earchibong/eks-ansible/blob/main/documentation.md#set-up-project-structure ">Set Up Project Structure</a>
 - <a href="https://github.com/earchibong/eks-ansible/blob/main/documentation.md#set-up-ansible-inventory">Set Up ansible Inventory</a>
 
 <br>
