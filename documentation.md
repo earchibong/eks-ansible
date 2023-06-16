@@ -138,7 +138,7 @@ eksctl create cluster -f cluster.yaml
 
 <br>
 
-<be>
+<br>
 
 
 - install `kubectl`
@@ -194,6 +194,9 @@ python3 -m pip show ansible
 
 # Install the required dependencies for working with EKS
 sudo pip3 install botocore
+
+# install kubernetes
+pip install kubernetes
 
 # install ansible-lint
 sudo pip3 install ansible-lint
@@ -401,8 +404,25 @@ the `include_vars` module is used to include the YAML file as variables. The YAM
       fail:
         msg: "YAML file validation failed."
       when: yaml_data is not defined
-    
-    - name: Create namespaces
+
+    - name: Install python3-pip package
+      yum:
+        name: python3-pip
+        state: present
+
+    - name: Upgrade pip
+      pip:
+        name: pip
+        state: latest
+        executable: pip3
+
+    - name: Install Kubernetes library
+      pip:
+        name: kubernetes
+        state: present
+        executable: pip3
+
+    - name: create namespaces
       k8s:
         kubeconfig: "{{ kubeconfig_path }}"
         api_version: v1
@@ -411,7 +431,7 @@ the `include_vars` module is used to include the YAML file as variables. The YAM
         state: present
       loop: "{{ namespaces }}"
     
-    - name: Create roles
+    - name: create roles
       k8s:
         kubeconfig: "{{ kubeconfig_path }}"
         api_version: rbac.authorization.k8s.io/v1
@@ -422,7 +442,7 @@ the `include_vars` module is used to include the YAML file as variables. The YAM
         state: present
       loop: "{{ roles }}"
     
-    - name: Create role bindings
+    - name: create role bindings
       k8s:
         kubeconfig: "{{ kubeconfig_path }}"
         api_version: rbac.authorization.k8s.io/v1
@@ -437,7 +457,7 @@ the `include_vars` module is used to include the YAML file as variables. The YAM
         state: present
       loop: "{{ role_bindings }}"
     
-    - name: Create service accounts
+    - name: create service accounts
       k8s:
         kubeconfig: "{{ kubeconfig_path }}"
         api_version: v1
