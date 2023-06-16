@@ -172,20 +172,30 @@ kubectl get nodes -o wide
 
 ```
 
-sudo yum update
-sudo amazon-linux-extras install ansible2
+# confirm pip
+python3 -m pip -V
 
 # install pip
-curl -O https://bootstrap.pypa.io/get-pip.py
+curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
 python3 get-pip.py --user
 
-ls -a ~
-export PATH=.bash_profile:$PATH
+# export path
+nano ~/.bash_profile
+export PATH=/<path>/<to>/Library/Python/3.11/bin:$PATH #add this in the bash profile
+save and close nano editor
+. $HOME/.bash_profile  #applies the change
+echo "$PATH" # confirms new settings
+
+# install ansible
+python3 -m pip install --user ansible
+ansible --version
+python3 -m pip show ansible
+
 
 # Install the required dependencies for working with EKS
 sudo pip3 install botocore
 
-# install yamllint
+# install ansible-lint
 sudo pip3 install ansible-lint
 
 # install the community.kubernetes collection
@@ -198,7 +208,31 @@ ansible-galaxy collection install community.kubernetes
 
 <br>
 
+- set up `SSH-agent`
 
+```
+
+
+# on your local machine:
+
+eval `ssh-agent -s`
+ssh-add ./<path-to-private-key>
+ssh-add ./ansible-eks.pem   #example
+ssh-add ./eks-nodes.pem    #example
+
+# Confirm the key has been added:
+ssh-add -l
+
+
+# ssh into Jenkins-Ansible server using ssh-agent: 
+ssh -A -i "private ec2 key" ec2-user@public_ip
+
+
+```
+
+<br>
+
+<br>
 
 ### Set Up Project Structure
 
@@ -277,6 +311,8 @@ The data file does the following:
 ```
 
 ---
+kubeconfig_path: </path/to/kubeconfig>
+
 namespaces:
   - webapps
   - webapps2
@@ -368,6 +404,7 @@ the `include_vars` module is used to include the YAML file as variables. The YAM
     
     - name: Create namespaces
       k8s:
+        kubeconfig: "{{ kubeconfig_path }}"
         api_version: v1
         kind: Namespace
         name: "{{ item }}"
@@ -376,6 +413,7 @@ the `include_vars` module is used to include the YAML file as variables. The YAM
     
     - name: Create roles
       k8s:
+        kubeconfig: "{{ kubeconfig_path }}"
         api_version: rbac.authorization.k8s.io/v1
         kind: Role
         name: "{{ item.name }}"
@@ -386,6 +424,7 @@ the `include_vars` module is used to include the YAML file as variables. The YAM
     
     - name: Create role bindings
       k8s:
+        kubeconfig: "{{ kubeconfig_path }}"
         api_version: rbac.authorization.k8s.io/v1
         kind: RoleBinding
         name: "{{ item.name }}"
@@ -400,6 +439,7 @@ the `include_vars` module is used to include the YAML file as variables. The YAM
     
     - name: Create service accounts
       k8s:
+        kubeconfig: "{{ kubeconfig_path }}"
         api_version: v1
         kind: ServiceAccount
         name: "{{ item.name }}"
