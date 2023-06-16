@@ -48,6 +48,7 @@ Lets implement it with ansible.
 - <a href="https://github.com/earchibong/eks-ansible/blob/main/documentation.md#set-up-ansible-inventory">Set Up ansible Inventory</a>
 - <a href="https://github.com/earchibong/eks-ansible/blob/main/documentation.md#set-up-data-file">Set Up Data File</a>
 - <a href="https://github.com/earchibong/eks-ansible/blob/main/documentation.md#create-a-playbook">Create A Playbook</a>
+- <a href="https://github.com/earchibong/eks-ansible/blob/main/documentation.md#run-playbook">Run Playbook</a>
 
 <br>
 
