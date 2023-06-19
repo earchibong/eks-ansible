@@ -290,11 +290,13 @@ ansible_ssh_common_args='-o ProxyCommand="ssh -W %h:%p -q -l ec2-user <bastion-p
 
 <br>
 
-<img width="1292" alt="eks_cluster" src="https://github.com/earchibong/eks-ansible/assets/92983658/15cbac85-9ab9-4923-b77f-cb901bdc7351">
+<img width="1186" alt="inventory" src="https://github.com/earchibong/eks-ansible/assets/92983658/a578794a-e25b-402f-8c15-4b7f240c59a7">
 
 <br>
 
-With this inventory configuration, Ansible will connect to the `bastion host first` and then establish an SSH connection to the public nodes in the EKS cluster. This allows Ansible to execute the playbook on the target nodes through the bastion host.
+*With this inventory configuration, Ansible will connect to the `bastion host first` and then establish an SSH connection to the public nodes in the EKS cluster. This allows Ansible to execute the playbook on the target nodes through the bastion host.*
+
+<be>
 
 <br>
 
