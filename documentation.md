@@ -391,6 +391,8 @@ the `include_vars` module is used to include the YAML file as variables. The YAM
   become: yes
   become_method: sudo
   gather_facts: false
+  environment:
+    K8S_AUTH_KUBECONFIG: </path/to/.kube/config>
 
   vars_files:
     - files/eks_data.yml
@@ -425,7 +427,6 @@ the `include_vars` module is used to include the YAML file as variables. The YAM
 
     - name: create namespaces
       k8s:
-        kubeconfig: </path/to/.kube/config>
         api_version: v1
         kind: Namespace
         name: "{{ item }}"
@@ -434,7 +435,6 @@ the `include_vars` module is used to include the YAML file as variables. The YAM
     
     - name: create roles
       k8s:
-        kubeconfig: </path/to/.kube/config>
         api_version: rbac.authorization.k8s.io/v1
         kind: Role
         name: "{{ item.name }}"
@@ -445,7 +445,6 @@ the `include_vars` module is used to include the YAML file as variables. The YAM
     
     - name: create role bindings
       k8s:
-        kubeconfig: </path/to/.kube/config>
         api_version: rbac.authorization.k8s.io/v1
         kind: RoleBinding
         name: "{{ item.name }}"
@@ -460,7 +459,6 @@ the `include_vars` module is used to include the YAML file as variables. The YAM
     
     - name: create service accounts
       k8s:
-        kubeconfig: </path/to/.kube/config>
         api_version: v1
         kind: ServiceAccount
         name: "{{ item.name }}"
